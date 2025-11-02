@@ -2,16 +2,17 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("org.jetbrains.kotlin.kapt")
 }
 
 android {
-    namespace = "com.example.desarrollomobile"
+    namespace = "com.example.desarrollomovil"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "com.example.desarrollomobile"
+        applicationId = "com.example.desarrollomovil"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -42,6 +43,24 @@ android {
 }
 
 dependencies {
+    implementation("androidx.camera:camera-core:1.3.0")
+    implementation("androidx.camera:camera-camera2:1.3.0")
+    implementation("androidx.camera:camera-lifecycle:1.3.0")
+    implementation("androidx.camera:camera-view:1.3.0")
+
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
+    implementation("androidx.navigation:navigation-compose:2.9.5")
+    implementation(libs.androidx.compose.foundation)
+
+    implementation ("androidx.room:room-runtime:2.8.2")
+    kapt ("androidx.room:room-compiler:2.8.2")
+    implementation ("androidx.room:room-ktx:2.8.2")
+    implementation("io.insert-koin:koin-android:3.4.3")
+
+    implementation("androidx.compose.material:material:1.4.3")
+
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
