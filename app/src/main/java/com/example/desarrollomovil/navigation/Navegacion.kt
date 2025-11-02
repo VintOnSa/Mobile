@@ -76,6 +76,9 @@ fun Navegacion() {
                     },
                     onLogout = {
                         logout(sharedPref, navController)
+                    },
+                    onClickJuego = { juegoId ->
+                        navController.navigate("verJuego/$juegoId")
                     }
                 )
         }
@@ -166,6 +169,18 @@ fun Navegacion() {
                     navController.navigate("listaJuegos") {
                         popUpTo("editarJuego/{juegoId}") { inclusive = true }
                     }
+                }
+            )
+        }
+
+
+        composable("verJuego/{juegoId}") { backStackEntry ->
+            val juegoId = backStackEntry.arguments?.getString("juegoId")?.toLongOrNull() ?: 0L
+
+            VerJuegoScreen(
+                juegoId = juegoId,
+                onBack = {
+                    navController.navigate("home/")
                 }
             )
         }

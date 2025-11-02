@@ -40,7 +40,8 @@ import com.example.desarrollomovil.R
 fun Home(
     userType: String,
     onProfileAction: () -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onClickJuego: (Long) -> Unit = {}
 ) {
     val context = LocalContext.current
     val database = LibreriaDatabase.getDatabase(context)
@@ -60,8 +61,9 @@ fun Home(
         )
         Column (
             modifier = Modifier
-                .fillMaxWidth().
-                padding(5.dp).padding(top = 10.dp),
+                .fillMaxWidth()
+                .padding(5.dp)
+                .padding(top = 10.dp),
             horizontalAlignment = Alignment.CenterHorizontally
             ){
                 Text(
@@ -86,9 +88,7 @@ fun Home(
                         .height(230.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
-                    onClick = {
-
-                    }
+                    onClick = {onClickJuego(juego.id)}
                 ) {
                     Column {
                         AsyncImage(
@@ -116,7 +116,7 @@ fun Home(
                                 textAlign = TextAlign.Center
                             )
                             Text(
-                                "$${juego.precio}",
+                                "$${juego.precio.toInt()}",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.primary,
                                 textAlign = TextAlign.Center
@@ -153,7 +153,9 @@ fun TopBarSimple(
         IconButton(onClick = {
             println("DEBUG: Icono clickeado, userType: $userType")
             onProfileAction()
-        }, modifier = Modifier.size(40.dp).padding(end = 16.dp)) {
+        }, modifier = Modifier
+            .size(40.dp)
+            .padding(end = 16.dp)) {
             Icon(Icons.Default.AccountCircle, "Usuario", tint = Color.White)
 
         }
@@ -165,9 +167,10 @@ fun TopBarSimple(
 fun HomePreview() {
     DesarrolloMovilTheme {
         Home(
-            userType = TODO(),
-            onProfileAction = TODO(),
-            onLogout = TODO()
+            userType = "usuario",
+            onProfileAction = {},
+            onLogout = {},
+            onClickJuego = {}
         )
     }
 }
