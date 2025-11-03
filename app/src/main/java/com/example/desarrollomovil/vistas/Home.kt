@@ -28,6 +28,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.painterResource
@@ -43,7 +44,8 @@ fun Home(
     userType: String,
     onProfileAction: () -> Unit,
     onLogout: () -> Unit,
-    onClickJuego: (Long) -> Unit = {}
+    onClickJuego: (Long) -> Unit = {},
+    toCarrito: () -> Unit,
 ) {
     val context = LocalContext.current
     val database = LibreriaDatabase.getDatabase(context)
@@ -64,7 +66,8 @@ fun Home(
         TopBarEditada(
             userType = userType,
             onProfileAction = onProfileAction,
-            onLogout = onLogout
+            onLogout = onLogout,
+            toCarrito = toCarrito
         )
         Column (
             modifier = Modifier
@@ -141,7 +144,8 @@ fun Home(
 fun TopBarEditada(
     userType: String,
     onProfileAction: () -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    toCarrito: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -151,19 +155,27 @@ fun TopBarEditada(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        IconButton(onClick = {
+            onProfileAction()
+        }, modifier = Modifier
+            .size(40.dp)
+            .padding(end = 16.dp)) {
+            Icon(Icons.Default.AccountCircle, "Usuario", tint = Color.White)
+
+        }
+
         Image(
             painter = painterResource(id = R.drawable.ic_launcher),
             contentDescription = "Icono",
             modifier = Modifier.size(36.dp)
         )
 
-        IconButton(onClick = {
-            println("DEBUG: Icono clickeado, userType: $userType")
-            onProfileAction()
-        }, modifier = Modifier
+        IconButton(
+            onClick = toCarrito,
+            modifier = Modifier
             .size(40.dp)
             .padding(end = 16.dp)) {
-            Icon(Icons.Default.AccountCircle, "Usuario", tint = Color.White)
+            Icon(Icons.Default.ShoppingCart, "Carrito", tint = Color.White)
 
         }
     }
@@ -177,7 +189,8 @@ fun HomePreview() {
             userType = "usuario",
             onProfileAction = {},
             onLogout = {},
-            onClickJuego = {}
+            onClickJuego = {},
+            toCarrito = {}
         )
     }
 }

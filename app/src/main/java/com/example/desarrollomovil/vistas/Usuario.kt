@@ -26,7 +26,7 @@ import com.example.desarrollomovil.ui.theme.DesarrolloMovilTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Usuario(userName: String, toHome: () -> Unit = {}, onLogout: () -> Unit = {}, onBack: () -> Unit = {}) {
+fun Usuario(userName: String, toHome: () -> Unit = {}, onLogout: () -> Unit = {}, onBack: () -> Unit = {}, toPedidos: () -> Unit = {}) {
 
     Scaffold(
         topBar = {
@@ -43,12 +43,12 @@ fun Usuario(userName: String, toHome: () -> Unit = {}, onLogout: () -> Unit = {}
         CenteredColumnWithSpacing(16.dp, paddingValues)
         {
             Button(
-                onClick = toHome,
+                onClick = toPedidos,
                 modifier = Modifier
-                    .width(150.dp)
-                    .height(180.dp)
+                    .fillMaxWidth()
+                    .height(60.dp)
             ) {
-                Text("Usuario")
+                Text("Mis Pedidos")
             }
             Button(
                 onClick = onLogout,
@@ -69,7 +69,8 @@ fun UsuarioPreview() {
         Usuario(
             userName = "Usuario",
             toHome = { },
-            onLogout = { })
+            onLogout = { },
+            toPedidos={})
 
     }
 }

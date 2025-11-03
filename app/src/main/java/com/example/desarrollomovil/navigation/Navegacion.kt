@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.desarrollomovil.vistas.*
 import com.example.desarrollomovil.vistas.crud.*
+import com.example.desarrollomovil.vistas.pedidos.*
 
 @Composable
 fun Navegacion() {
@@ -79,6 +80,9 @@ fun Navegacion() {
                     },
                     onClickJuego = { juegoId ->
                         navController.navigate("verJuego/$juegoId")
+                    },
+                    toCarrito = {
+                        navController.navigate("carrito")
                     }
                 )
         }
@@ -185,6 +189,33 @@ fun Navegacion() {
             )
         }
 
+        composable("carrito") { backStackEntry ->
+            CarritoScreen(
+                onBack = {
+                    navController.navigate("home/")
+                }
+            )
+        }
+
+        composable("pedido") { backStackEntry ->
+            PedidosScreen (
+                onBack = {
+                    navController.navigate("usuario")
+                },
+                toDetallePedido = {
+                    navController.navigate("detallePedido")
+                }
+            )
+        }
+
+        composable("detallePedido") { backStackEntry ->
+            DetallePedidoScreen(
+                onBack = {
+                    navController.navigate("pedido")
+                }
+            )
+        }
+
 
         composable("usuario") {
             val currentUserType = sharedPref.getString("user_type", "") ?: ""
@@ -205,6 +236,12 @@ fun Navegacion() {
                 },
                 onLogout = {
                     logout(sharedPref, navController)
+                },
+                toPedidos = {
+                    navController.navigate("pedido")
+                },
+                onBack = {
+                    navController.navigate("home/")
                 }
             )
         }
