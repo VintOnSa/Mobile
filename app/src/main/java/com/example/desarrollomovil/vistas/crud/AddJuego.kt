@@ -34,23 +34,24 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.example.desarrollomovil.data.*
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.example.desarrollomovil.viewmodels.JuegoViewModel
 import com.example.desarrollomovil.viewmodels.JuegoViewModelFactory
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.Executors
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AgregarJuegoScreen(onBack: () -> Unit = {}, onAgregarSuccess: () -> Unit = {}) {
+fun AgregarJuegoScreen(
+    onBack: () -> Unit = {},
+    onAgregarSuccess: () -> Unit = {})
+{
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     val database = LibreriaDatabase.getDatabase(context)
     val repository = JuegoRepository(database.juegoDao())
-    val juegoViewModel: JuegoViewModel = viewModel(
-        factory = JuegoViewModelFactory(repository)
-    )
-
+    val juegoViewModel: JuegoViewModel = viewModel(factory = JuegoViewModelFactory(repository))
 
     var titulo by remember { mutableStateOf("") }
     var publicador by remember { mutableStateOf("") }
@@ -60,18 +61,32 @@ fun AgregarJuegoScreen(onBack: () -> Unit = {}, onAgregarSuccess: () -> Unit = {
     var plataforma by remember { mutableStateOf("") }
     var genero by remember { mutableStateOf("") }
 
+    var mostrarDialogoSeleccion by remember { mutableStateOf(false) }
+    var camaraAbierta by remember { mutableStateOf(false) }
+    var imagenUri by remember { mutableStateOf<Uri?>(null) }
+
     val lifecycle = LocalLifecycleOwner.current
     var tenemosPermisoCamara by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
         )
     }
-    val lanzarPermiso = rememberLauncherForActivityResult(
+    val lanzarPermisoCamara = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()) { granted ->
         tenemosPermisoCamara = granted
+        if (granted) {
+            camaraAbierta = true
+        }
     }
-    var camaraAbierta by remember { mutableStateOf(false) }
-    var imagenUri by remember { mutableStateOf<Uri?>(null) }
+
+    val lanzadorGaleria = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            imagenUri = it
+        }
+    }
+
     val ejecutarCamara = remember { Executors.newSingleThreadExecutor() }
     val capturaFoto = remember { ImageCapture.Builder().build() }
     val proveedorCamara = remember { ProcessCameraProvider.getInstance(context) }
@@ -80,10 +95,42 @@ fun AgregarJuegoScreen(onBack: () -> Unit = {}, onAgregarSuccess: () -> Unit = {
 
     LaunchedEffect(mensaje) {
         if (mensaje != null && mensaje!!.contains("exito")) {
-            Toast.makeText(context, "Juego agregado", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, "Juego Agregado", Toast.LENGTH_LONG).show()
             titulo = ""; publicador = ""; precio = ""; stock = ""; descripcion = ""; plataforma = ""; genero = ""; imagenUri = null
             onAgregarSuccess()
         }
+    }
+
+    if (mostrarDialogoSeleccion) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialogoSeleccion = false },
+            title = { Text("Seleccionar Imagen") },
+            text = { Text("¿Cómo quieres agregar la imagen del juego?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        mostrarDialogoSeleccion = false
+                        if (tenemosPermisoCamara) {
+                            camaraAbierta = true
+                        } else {
+                            lanzarPermisoCamara.launch(Manifest.permission.CAMERA)
+                        }
+                    }
+                ) {
+                    Text("Tomar Foto")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        mostrarDialogoSeleccion = false
+                        lanzadorGaleria.launch("image/*")
+                    }
+                ) {
+                    Text("Desde Galería")
+                }
+            }
+        )
     }
 
     if (camaraAbierta && tenemosPermisoCamara) {
@@ -127,6 +174,7 @@ fun AgregarJuegoScreen(onBack: () -> Unit = {}, onAgregarSuccess: () -> Unit = {
                                 }
 
                                 override fun onError(exception: ImageCaptureException) {
+                                    Toast.makeText(context, "Error al tomar foto", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         )
@@ -139,7 +187,10 @@ fun AgregarJuegoScreen(onBack: () -> Unit = {}, onAgregarSuccess: () -> Unit = {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
-                    onClick = { camaraAbierta = false },
+                    onClick = {
+                        camaraAbierta = false
+                        mostrarDialogoSeleccion = true
+                    },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Cancelar")
@@ -197,30 +248,41 @@ fun AgregarJuegoScreen(onBack: () -> Unit = {}, onAgregarSuccess: () -> Unit = {
 
                 Button(
                     onClick = {
-                        if (tenemosPermisoCamara) {
-                            camaraAbierta = true
-                        } else {
-                            lanzarPermiso.launch(Manifest.permission.CAMERA)
-                        }
+                        mostrarDialogoSeleccion = true
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     if (imagenUri != null && imagenUri?.toString()?.isNotBlank() == true){
-                        Text("Cambiar Foto")
+                        Text("Cambiar Imagen")
                     } else{
-                        Text("Abrir Camara")
+                        Text("Agregar Imagen")
                     }
                 }
 
                 imagenUri?.let { uri ->
-                    Text("Foto Lista", color = MaterialTheme.colorScheme.primary)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Preview Imagen:", color = MaterialTheme.colorScheme.primary)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        AsyncImage(
+                            model = uri,
+                            contentDescription = "Imagen",
+                            modifier = Modifier
+                                .size(150.dp)
+                                .padding(8.dp)
+                        )
+                    }
                 }
 
                 mensaje?.let {
                     Text(
                         text = it,
                         color = if (it.contains("Exito")) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.error
+                        else MaterialTheme.colorScheme.error,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
 
@@ -242,7 +304,7 @@ fun AgregarJuegoScreen(onBack: () -> Unit = {}, onAgregarSuccess: () -> Unit = {
                         )
                     },
                     modifier = Modifier.fillMaxWidth().height(56.dp),
-                    enabled = titulo.isNotBlank() && publicador.isNotBlank() && precio.isNotBlank() && stock.isNotBlank() && plataforma.isNotBlank() && genero.isNotBlank() && imagenUri.toString().isNotBlank() && imagenUri != null
+                    enabled = titulo.isNotBlank() && publicador.isNotBlank() && precio.isNotBlank() && stock.isNotBlank() && plataforma.isNotBlank() && genero.isNotBlank() && imagenUri != null
                 ) {
                     Text("Agregar Juego")
                 }
@@ -266,7 +328,8 @@ fun CenteredColumnWithSpacing(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding (16.dp)
+            .padding(paddingValues)
+            .padding(16.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center

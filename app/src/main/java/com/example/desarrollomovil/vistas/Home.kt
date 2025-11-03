@@ -28,12 +28,14 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import com.example.desarrollomovil.R
+import com.example.desarrollomovil.data.UserRepository
 
 
 @Composable
@@ -51,10 +53,15 @@ fun Home(
     )
 
     val juegos = juegoViewModel.todosLosJuegos.collectAsState(initial = emptyList()).value.sortedBy { it.id }
-    val primerJuego = juegos.firstOrNull()
+
+    LaunchedEffect(Unit) {
+        val database = LibreriaDatabase.getDatabase(context)
+        val repository = JuegoRepository(database.juegoDao())
+        repository.juegosInicio(context)
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TopBarSimple(
+        TopBarEditada(
             userType = userType,
             onProfileAction = onProfileAction,
             onLogout = onLogout
@@ -131,7 +138,7 @@ fun Home(
 
 
 @Composable
-fun TopBarSimple(
+fun TopBarEditada(
     userType: String,
     onProfileAction: () -> Unit,
     onLogout: () -> Unit
@@ -140,7 +147,7 @@ fun TopBarSimple(
         modifier = Modifier
             .fillMaxWidth()
             .background(Color(0xFF006064))
-            .padding(20.dp, top = 30.dp, bottom = 10.dp),
+            .padding(20.dp, top = 35.dp, bottom = 10.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {

@@ -20,5 +20,6 @@ interface JuegoDao {
     @Query("DELETE FROM juegos WHERE id = :id")
     suspend fun eliminarJuego(id: Long)
 
-
+    @Query("SELECT COUNT(*) FROM juegos")
+    suspend fun contarJuegos(): Int
 }
