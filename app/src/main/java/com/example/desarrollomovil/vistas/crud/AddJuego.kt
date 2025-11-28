@@ -50,6 +50,7 @@ fun AgregarJuegoScreen(
 {
     val context = LocalContext.current
     val juegoViewModel = viewModel<JuegoViewModel>()
+    var isLoading by remember { mutableStateOf(false) }
 
     var titulo = juegoViewModel.state.titulo
     var publicador = juegoViewModel.state.publicador
@@ -83,7 +84,7 @@ fun AgregarJuegoScreen(
         uri?.let {
             try {
                 val inputStream = context.contentResolver.openInputStream(it)
-                val archivo = File.createTempFile("galeria_${System.currentTimeMillis()}", "", context.cacheDir)
+                val archivo = File.createTempFile("galeria_${System.currentTimeMillis()}", ".jpg", context.cacheDir)
                 inputStream?.use { input ->
                     archivo.outputStream().use { output ->
                         input.copyTo(output)
@@ -106,8 +107,8 @@ fun AgregarJuegoScreen(
 
     LaunchedEffect(mensaje) {
         if (mensaje != null && mensaje!!.contains("exito")) {
+            isLoading = false
             Toast.makeText(context, "Juego Agregado", Toast.LENGTH_LONG).show()
-            titulo = ""; publicador = ""; precio = ""; stock = ""; descripcion = ""; plataforma = ""; genero = ""; imagenUri = null
             onAgregarSuccess()
         }
     }
@@ -222,90 +223,112 @@ fun AgregarJuegoScreen(
                 )
             }
         ) { paddingValues ->
-            CenteredColumnWithSpacing (16.dp, paddingValues) {
-                OutlinedTextField(
-                    value = titulo, onValueChange = { juegoViewModel.cTitulo(it)},
-                    label = { Text("Titulo *") }, modifier = Modifier.fillMaxWidth(), singleLine = true
-                )
-                OutlinedTextField(
-                    value = publicador, onValueChange = { juegoViewModel.cPublicador(it)},
-                    label = { Text("Publicador *") }, modifier = Modifier.fillMaxWidth(), singleLine = true
-                )
-                OutlinedTextField(
-                    value = precio, onValueChange = { juegoViewModel.cPrecio(it)},
-                    label = { Text("Precio *") }, modifier = Modifier.fillMaxWidth(),
-                    singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
-                )
-                OutlinedTextField(
-                    value = stock, onValueChange = { juegoViewModel.cStock(it) },
-                    label = { Text("Stock *") }, modifier = Modifier.fillMaxWidth(),
-                    singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                )
-                OutlinedTextField(
-                    value = descripcion, onValueChange = { juegoViewModel.cDesc(it)},
-                    label = { Text("Descripcion") },
-                    modifier = Modifier.fillMaxWidth().height(100.dp), maxLines = 3
-                )
-                OutlinedTextField(
-                    value = plataforma, onValueChange = { juegoViewModel.cPlataforma(it) },
-                    label = { Text("Plataforma *") },
-                    modifier = Modifier.fillMaxWidth(), singleLine = true
-                )
-                OutlinedTextField(
-                    value = genero, onValueChange = { juegoViewModel.cGenero(it) },
-                    label = { Text("Genero *") },
-                    modifier = Modifier.fillMaxWidth(), singleLine = true
-                )
+            if (isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
 
-                Button(
-                    onClick = {
-                        mostrarDialogoSeleccion = true
-                    },
-                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    if (imagenUri != null && imagenUri?.toString()?.isNotBlank() == true){
-                        Text("Cambiar Imagen")
-                    } else{
-                        Text("Agregar Imagen")
-                    }
-                }
-
-                imagenUri?.let { uri ->
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Preview Imagen:", color = MaterialTheme.colorScheme.primary)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        AsyncImage(
-                            model = uri,
-                            contentDescription = "Imagen",
-                            modifier = Modifier
-                                .size(150.dp)
-                                .padding(8.dp)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator()
+                        Text("Agregando Juego...",
+                            modifier = Modifier.padding(top = 16.dp)
                         )
                     }
                 }
-
-                mensaje?.let {
-                    Text(
-                        text = it,
-                        color = if (it.contains("Exito")) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.error,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
+            } else {
+                CenteredColumnWithSpacing (16.dp, paddingValues) {
+                    OutlinedTextField(
+                        value = titulo, onValueChange = { juegoViewModel.cTitulo(it)},
+                        label = { Text("Titulo *") }, modifier = Modifier.fillMaxWidth(), singleLine = true
                     )
-                }
+                    OutlinedTextField(
+                        value = publicador, onValueChange = { juegoViewModel.cPublicador(it)},
+                        label = { Text("Publicador *") }, modifier = Modifier.fillMaxWidth(), singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = precio, onValueChange = { juegoViewModel.cPrecio(it)},
+                        label = { Text("Precio *") }, modifier = Modifier.fillMaxWidth(),
+                        singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                    )
+                    OutlinedTextField(
+                        value = stock, onValueChange = { juegoViewModel.cStock(it) },
+                        label = { Text("Stock *") }, modifier = Modifier.fillMaxWidth(),
+                        singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    )
+                    OutlinedTextField(
+                        value = descripcion, onValueChange = { juegoViewModel.cDesc(it)},
+                        label = { Text("Descripcion") },
+                        modifier = Modifier.fillMaxWidth().height(100.dp), maxLines = 3
+                    )
+                    OutlinedTextField(
+                        value = plataforma, onValueChange = { juegoViewModel.cPlataforma(it) },
+                        label = { Text("Plataforma *") },
+                        modifier = Modifier.fillMaxWidth(), singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = genero, onValueChange = { juegoViewModel.cGenero(it) },
+                        label = { Text("Genero *") },
+                        modifier = Modifier.fillMaxWidth(), singleLine = true
+                    )
 
-                Button(
-                    onClick = {
-                        juegoViewModel.limpiarMensaje()
-                        juegoViewModel.agregarJuego(imagenUri?.toFile())
-                    },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    enabled = titulo.isNotBlank() && publicador.isNotBlank() && precio.isNotBlank() && stock.isNotBlank() && plataforma.isNotBlank() && genero.isNotBlank() && imagenUri != null
-                ) {
-                    Text("Agregar Juego")
+                    Button(
+                        onClick = {
+                            mostrarDialogoSeleccion = true
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        if (imagenUri != null && imagenUri?.toString()?.isNotBlank() == true){
+                            Text("Cambiar Imagen")
+                        } else{
+                            Text("Agregar Imagen")
+                        }
+                    }
+
+                    imagenUri?.let { uri ->
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Preview Imagen:", color = MaterialTheme.colorScheme.primary)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            AsyncImage(
+                                model = uri,
+                                contentDescription = "Imagen",
+                                modifier = Modifier
+                                    .size(150.dp)
+                                    .padding(8.dp)
+                            )
+                        }
+                    }
+
+                    mensaje?.let {
+                        Text(
+                            text = it,
+                            color = if (it.contains("Exito")) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.error,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    Button(
+                        onClick = {
+                            isLoading = true
+                            try {
+                                juegoViewModel.limpiarMensaje()
+                                juegoViewModel.agregarJuego(imagenUri?.toFile())
+                            }catch (e:Exception){
+                                isLoading = false
+                                Toast.makeText(context, "Error al agregar juego", Toast.LENGTH_SHORT).show()
+                            }
+
+                        },
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        enabled = titulo.isNotBlank() && publicador.isNotBlank() && precio.isNotBlank() && stock.isNotBlank() && plataforma.isNotBlank() && genero.isNotBlank() && imagenUri != null
+                    ) {
+                        Text("Agregar Juego")
+                    }
                 }
             }
         }

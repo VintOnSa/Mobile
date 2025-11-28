@@ -102,7 +102,7 @@ fun EditarJuegoScreen(
         uri?.let {
             try {
                 val inputStream = context.contentResolver.openInputStream(it)
-                val archivo = File.createTempFile("galeria_${System.currentTimeMillis()}", "", context.cacheDir)
+                val archivo = File.createTempFile("galeria_${System.currentTimeMillis()}", ".jpg", context.cacheDir)
                 inputStream?.use { input ->
                     archivo.outputStream().use { output ->
                         input.copyTo(output)
@@ -119,6 +119,7 @@ fun EditarJuegoScreen(
     //Mensaje cuando se actualize el juego sin error
     LaunchedEffect(mensaje) {
        if (mensaje != null && mensaje!!.contains("exito")) {
+           isLoading = false
            Toast.makeText(context, "Juego Actualizado", Toast.LENGTH_LONG).show()
            onEditarSuccess()
         }
@@ -241,9 +242,6 @@ fun EditarJuegoScreen(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         CircularProgressIndicator()
-                        Text("Cargando juego...",
-                            modifier = Modifier.padding(top = 16.dp)
-                        )
                     }
                 }
             } else {
@@ -347,6 +345,7 @@ fun EditarJuegoScreen(
 
                     Button(
                         onClick = {
+                            isLoading = true
                             val juegoEditado = Juego(
                                 id = juegoId,
                                 titulo = juegoViewModel.state.titulo,
@@ -358,8 +357,14 @@ fun EditarJuegoScreen(
                                 genero = juegoViewModel.state.genero,
                                 imagenurl = juegoViewModel.state.imagenurl
                             )
-                            juegoViewModel.actualizarJuego(juegoEditado,imagenUri?.toFile())
-                            juegoViewModel.limpiarMensaje()
+                            try {
+                                juegoViewModel.actualizarJuego(juegoEditado,imagenUri?.toFile())
+                                juegoViewModel.limpiarMensaje()
+                            }catch (e:Exception){
+                                isLoading = false
+                                Toast.makeText(context, "Error al Editar el Juego", Toast.LENGTH_LONG).show()
+                            }
+
                         },
                         modifier = Modifier
                             .fillMaxWidth()

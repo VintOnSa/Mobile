@@ -40,6 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import com.example.desarrollomovil.R
 import com.example.desarrollomovil.data.UserRepository
+import java.text.DecimalFormat
 
 
 @Composable
@@ -56,6 +57,7 @@ fun Home(
     val state = juegoViewModel.state
 
     var isLoading by remember { mutableStateOf(true) }
+    val formato = DecimalFormat("#,###")
 
     LaunchedEffect(Unit) {
         isLoading = true
@@ -145,7 +147,7 @@ fun Home(
                                     textAlign = TextAlign.Center
                                 )
                                 Text(
-                                    "$${juego.precio.toInt()}",
+                                    "$${formato.format(juego.precio)}",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.primary,
                                     textAlign = TextAlign.Center

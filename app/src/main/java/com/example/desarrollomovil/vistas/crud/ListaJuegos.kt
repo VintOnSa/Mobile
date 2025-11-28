@@ -21,6 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.desarrollomovil.data.Juego
 import com.example.desarrollomovil.viewmodels.JuegoViewModel
+import java.text.DecimalFormat
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,6 +35,7 @@ fun ListaJuegosScreen(
     var state = juegoViewModel.state
 
     var isLoading by remember { mutableStateOf(true) }
+    val formato = DecimalFormat("#,###")
 
     LaunchedEffect(Unit) {
         isLoading = true
@@ -206,7 +208,7 @@ fun ListaJuegosScreen(
                                     )
 
                                     Text(
-                                        text = "Precio: $${juego.precio}",
+                                        text = "Precio: $${formato.format(juego.precio)}",
                                         style = MaterialTheme.typography.bodyMedium
                                     )
 

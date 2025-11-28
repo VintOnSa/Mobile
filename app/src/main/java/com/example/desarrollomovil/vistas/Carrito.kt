@@ -21,20 +21,20 @@ import coil.request.ImageRequest
 import com.example.desarrollomovil.data.Juego
 import com.example.desarrollomovil.data.LibreriaDatabase
 import com.example.desarrollomovil.viewmodels.JuegoViewModel
+import java.text.DecimalFormat
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CarritoScreen(
     onBack: () -> Unit = {},
-) {/*
+) {
     val context = LocalContext.current
-    val database = LibreriaDatabase.getDatabase(context)
-    val repository = JuegoRepository(database.juegoDao())
-    val juegoViewModel: JuegoViewModel = viewModel(
-        factory = JuegoViewModelFactory(repository)
-    )
 
-    val juegos by juegoViewModel.todosLosJuegos.collectAsState(initial = emptyList())
+    val juegoViewModel = viewModel<JuegoViewModel>()
+    var state = juegoViewModel.state
+
+    val formato = DecimalFormat("#,###")
+    val juegos = state.juego
 
     val juegosCarrito = remember(juegos) {
         if (juegos.size >= 2) {
@@ -118,7 +118,7 @@ fun CarritoScreen(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            "$${String.format("%.0f", total)}",
+                            "$${formato.format(total)}",
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -189,7 +189,7 @@ fun CarritoScreen(
                             ) {
                                 AsyncImage(
                                     model = ImageRequest.Builder(LocalContext.current)
-                                        .data(juego.imagenUri)
+                                        .data(juego.imagenurl)
                                         .crossfade(true)
                                         .build(),
                                     contentDescription = "Portada de ${juego.titulo}",
@@ -223,7 +223,7 @@ fun CarritoScreen(
                                     Spacer(modifier = Modifier.height(4.dp))
 
                                     Text(
-                                        text = "Precio: $${String.format("%.0f", juego.precio)}",
+                                        text = "Precio: $${formato.format(juego.precio)}",
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                     )
@@ -231,7 +231,7 @@ fun CarritoScreen(
                                     Spacer(modifier = Modifier.height(8.dp))
 
                                     Text(
-                                        text = "Subtotal: $${String.format("%.0f", juego.precio * juego.stock)}",
+                                        text = "Subtotal: $${formato.format(juego.precio * juego.stock)}",
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.primary
@@ -263,7 +263,7 @@ fun CarritoScreen(
                 }
             }
         }
-    }*/
+    }
 }
 
 @Preview(showBackground = true)

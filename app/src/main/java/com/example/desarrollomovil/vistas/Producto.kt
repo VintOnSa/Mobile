@@ -1,5 +1,6 @@
 package com.example.desarrollomovil.vistas
 
+import android.icu.text.DecimalFormat
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
@@ -50,6 +51,7 @@ fun VerJuegoScreen(
     onBack: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val formato = DecimalFormat("#,###")
 
 
     val juegoViewModel = viewModel<JuegoViewModel>()
@@ -200,7 +202,7 @@ fun VerJuegoScreen(
 
 
                     Text(
-                        text = "$${juegoSeleccionado?.precio?.toInt()}",
+                        text = "$${formato.format(juegoSeleccionado?.precio)}",
                         style = MaterialTheme.typography.headlineMedium
                     )
 

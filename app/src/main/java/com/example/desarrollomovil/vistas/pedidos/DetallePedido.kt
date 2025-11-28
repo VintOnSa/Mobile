@@ -179,7 +179,7 @@ fun DetallePedidoScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text("Cantidad: ${juego.cantidad}")
-                            Text("Precio: $${String.format("%.0f", juego.precioUnitario)}")
+                            Text("Precio: $${juego.precioUnitario}")
                         }
 
                         Spacer(modifier = Modifier.height(4.dp))
@@ -190,7 +190,7 @@ fun DetallePedidoScreen(
                         ) {
                             Text("Subtotal:")
                             Text(
-                                "$${String.format("%.0f", juego.subtotal)}",
+                                "$${juego.subtotal}",
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
                             )
