@@ -1,6 +1,8 @@
 package com.example.desarrollomovil.navigation
 
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
@@ -10,7 +12,9 @@ import androidx.navigation.compose.rememberNavController
 import com.example.desarrollomovil.vistas.*
 import com.example.desarrollomovil.vistas.crud.*
 import com.example.desarrollomovil.vistas.pedidos.*
+import androidx.core.content.edit
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun Navegacion() {
     val navController = rememberNavController()
@@ -24,12 +28,12 @@ fun Navegacion() {
         composable("login") {
             LoginScreen(
                 onLoginSuccess = { usuario ->
-                    sharedPref.edit()
-                        .putBoolean("is_logged_in", true)
-                        .putString("user_type", usuario.tipo)
-                        .putString("user_email", usuario.correo)
-                        .putString("user_name", usuario.nombre)
-                        .apply()
+                    sharedPref.edit {
+                        putBoolean("is_logged_in", true)
+                            .putString("user_type", usuario.tipo)
+                            .putString("user_email", usuario.correo)
+                            .putString("user_name", usuario.nombre)
+                    }
                     navController.navigate("home/${usuario.tipo}") {
                         popUpTo("login") { inclusive = true }
                     }
@@ -262,9 +266,9 @@ private fun isUserLoggedIn(sharedPref: android.content.SharedPreferences): Boole
 }
 
 private fun logout(sharedPref: android.content.SharedPreferences, navController: androidx.navigation.NavHostController) {
-    sharedPref.edit()
-        .clear()
-        .apply()
+    sharedPref.edit {
+        clear()
+    }
     navController.navigate("login") {
         popUpTo(0) { inclusive = true }
     }

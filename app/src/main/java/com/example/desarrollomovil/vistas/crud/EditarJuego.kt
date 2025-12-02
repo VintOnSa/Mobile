@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -16,9 +15,7 @@ import androidx.camera.core.Preview as CameraPreview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
@@ -38,7 +35,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.desarrollomovil.viewmodels.JuegoViewModel
 import com.example.desarrollomovil.vistas.vibrar
-import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.Executors
 
@@ -356,7 +352,6 @@ fun EditarJuegoScreen(
                     Button(
                         onClick = {
                             isLoading = true
-                            vibrar(context)
                             val juegoEditado = Juego(
                                 id = juegoId,
                                 titulo = juegoViewModel.state.titulo,

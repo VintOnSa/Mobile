@@ -25,7 +25,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.desarrollomovil.data.LibreriaDatabase
 import com.example.desarrollomovil.ui.theme.DesarrolloMovilTheme
 import com.example.desarrollomovil.viewmodels.JuegoViewModel
 
@@ -47,7 +46,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import com.example.desarrollomovil.R
-import com.example.desarrollomovil.data.UserRepository
 import java.text.DecimalFormat
 
 
@@ -253,11 +251,11 @@ fun vibrar(context: Context) {
     if (vibrator.hasVibrator()) {
         vibrator.vibrate(
             VibrationEffect.createOneShot(
-                500,
-                VibrationEffect.DEFAULT_AMPLITUDE
+                1500,
+                100
             )
         )
     } else {
-        vibrator.vibrate(500)
+        vibrator.vibrate(1500)
     }
 }
