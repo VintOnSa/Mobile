@@ -3,9 +3,11 @@ package com.example.desarrollomovil.vistas.crud
 import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -37,11 +39,13 @@ import com.example.desarrollomovil.data.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.desarrollomovil.viewmodels.JuegoViewModel
+import com.example.desarrollomovil.vistas.vibrar
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.Executors
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AgregarJuegoScreen(
@@ -314,6 +318,7 @@ fun AgregarJuegoScreen(
 
                     Button(
                         onClick = {
+                            vibrar(context)
                             isLoading = true
                             try {
                                 juegoViewModel.limpiarMensaje()
@@ -335,6 +340,7 @@ fun AgregarJuegoScreen(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
 fun AgregarJuegoScreenPreview() {

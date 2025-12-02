@@ -1,6 +1,8 @@
 package com.example.desarrollomovil.vistas.crud
 
+import android.os.Build
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,8 +23,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.desarrollomovil.data.Juego
 import com.example.desarrollomovil.viewmodels.JuegoViewModel
+import com.example.desarrollomovil.vistas.vibrar
 import java.text.DecimalFormat
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListaJuegosScreen(
@@ -236,6 +240,7 @@ fun ListaJuegosScreen(
 
                                         Button(
                                             onClick = {
+                                                vibrar(context)
                                                 juegoAEliminar = juego
                                                 showDeleteAlert = true
                                             },
@@ -258,6 +263,7 @@ fun ListaJuegosScreen(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
 fun ListaJuegosScreenPreview() {

@@ -3,10 +3,12 @@ package com.example.desarrollomovil.vistas.crud
 import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -35,10 +37,12 @@ import com.example.desarrollomovil.data.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.desarrollomovil.viewmodels.JuegoViewModel
+import com.example.desarrollomovil.vistas.vibrar
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.Executors
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditarJuegoScreen(
@@ -48,9 +52,9 @@ fun EditarJuegoScreen(
 ) {
     val context = LocalContext.current
     val juegoViewModel = viewModel<JuegoViewModel>()
-
     var isLoading by remember { mutableStateOf(true) }
 
+    //Carga de datos de Juego
     LaunchedEffect(Unit) {
         isLoading = true
         try {
@@ -61,7 +65,7 @@ fun EditarJuegoScreen(
             isLoading = false
         }
     }
-
+    //State para traer informacion del juego
     var titulo = juegoViewModel.state.titulo
     var publicador = juegoViewModel.state.publicador
     var precio = juegoViewModel.state.precio
@@ -71,6 +75,7 @@ fun EditarJuegoScreen(
     var genero = juegoViewModel.state.genero
     var imagenurl = juegoViewModel.state.imagenurl
 
+    //Variables para Seleccion de Imagen
     var mostrarDialogoSeleccion by remember { mutableStateOf(false) }
     var camaraAbierta by remember { mutableStateOf(false) }
     val ejecutarCamara = remember { Executors.newSingleThreadExecutor() }
@@ -78,14 +83,15 @@ fun EditarJuegoScreen(
     val proveedorCamara = remember { ProcessCameraProvider.getInstance(context) }
     var imagenUri by remember { mutableStateOf<Uri?>(null) }
 
-
     val mensaje by juegoViewModel.mensaje.collectAsState()
 
     //Permisos y funciones camara
     val lifecycle = LocalLifecycleOwner.current
     var tenemosPermisoCamara by remember {
         mutableStateOf(
-            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
         )
     }
     val lanzarPermisoCamara = rememberLauncherForActivityResult(
@@ -102,16 +108,20 @@ fun EditarJuegoScreen(
         uri?.let {
             try {
                 val inputStream = context.contentResolver.openInputStream(it)
-                val archivo = File.createTempFile("galeria_${System.currentTimeMillis()}", ".jpg", context.cacheDir)
+                val archivo = File.createTempFile(
+                    "galeria_${System.currentTimeMillis()}",
+                    ".jpg",
+                    context.cacheDir
+                )
                 inputStream?.use { input ->
                     archivo.outputStream().use { output ->
                         input.copyTo(output)
                     }
                 }
-
                 imagenUri = Uri.fromFile(archivo)
 
             } catch (e: Exception) {
+                vibrar(context)
                 Toast.makeText(context, "Error al cargar imagen", Toast.LENGTH_SHORT).show()
             }
         }
@@ -346,6 +356,7 @@ fun EditarJuegoScreen(
                     Button(
                         onClick = {
                             isLoading = true
+                            vibrar(context)
                             val juegoEditado = Juego(
                                 id = juegoId,
                                 titulo = juegoViewModel.state.titulo,
@@ -379,6 +390,7 @@ fun EditarJuegoScreen(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
 fun EditarJuegoScreenPreview() {

@@ -1,6 +1,13 @@
 package com.example.desarrollomovil.vistas
 
+import android.Manifest
+import android.content.Context
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.widget.Toast
+import androidx.annotation.RequiresApi
+import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.Image
 import coil.compose.AsyncImage
 import androidx.compose.foundation.background
@@ -27,6 +34,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -185,7 +193,6 @@ fun TopBarEditada(
             Icon(Icons.Default.AccountCircle, "Usuario", tint = Color.White)
 
         }
-
         Image(
             painter = painterResource(id = R.drawable.ic_launcher),
             contentDescription = "Icono",
@@ -203,6 +210,7 @@ fun TopBarEditada(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true)
 @Composable
 fun HomePreview() {
@@ -232,5 +240,24 @@ fun CenteredColumnWithSpacing(
         verticalArrangement = Arrangement.spacedBy(spacing, Alignment.CenterVertically)
     ) {
         content()
+    }
+}
+
+
+
+
+@RequiresApi(Build.VERSION_CODES.O)
+@RequiresPermission(Manifest.permission.VIBRATE)
+fun vibrar(context: Context) {
+    val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+    if (vibrator.hasVibrator()) {
+        vibrator.vibrate(
+            VibrationEffect.createOneShot(
+                500,
+                VibrationEffect.DEFAULT_AMPLITUDE
+            )
+        )
+    } else {
+        vibrator.vibrate(500)
     }
 }
