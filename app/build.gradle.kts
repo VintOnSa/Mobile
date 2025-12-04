@@ -62,6 +62,12 @@ dependencies {
     androidTestImplementation("androidx.navigation:navigation-testing:2.7.5") // Para pruebas de navegación
     androidTestImplementation("androidx.arch.core:core-testing:2.2.0") // Para LiveData/Flow
 
+    androidTestImplementation("io.mockk:mockk-android:1.13.8") // Usa 'mockk-android' en instrumentación
+
+
+
+
+
 
 
     //Camara

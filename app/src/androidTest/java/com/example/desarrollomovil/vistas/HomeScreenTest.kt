@@ -3,8 +3,11 @@ package com.example.desarrollomovil.vistas
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.desarrollomovil.data.Item
+// ✅ CORRECCIÓN 1: Importar la clase 'Juego' en lugar de 'Item'
+import com.example.desarrollomovil.data.Juego
+// ✅ CORRECCIÓN 2: Asumimos que HomeViewModel trabaja con el repositorio de Juegos/ítems.
 import com.example.desarrollomovil.viewmodels.HomeViewModel
+import com.example.desarrollomovil.vistas.HomeScreen // Importación del Composable HomeScreen
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,11 +24,12 @@ class HomeScreenTest {
     val composeTestRule = createComposeRule()
 
     private val mockViewModel = mockk<HomeViewModel>(relaxed = true)
-    private val itemsFlow = MutableStateFlow<List<Item>>(emptyList())
+    // Se usa 'Juego' como tipo de dato en el flujo
+    private val itemsFlow = MutableStateFlow<List<Juego>>(emptyList())
 
     @Before
     fun setup() {
-        // Configurar el mock para que el ViewModel emita la lista de ítems
+        // Configurar el mock para que el ViewModel emita la lista de juegos
         every { mockViewModel.items } returns itemsFlow
     }
 
@@ -43,7 +47,6 @@ class HomeScreenTest {
 
         // 2. Assert: Saludo para usuario estándar
         composeTestRule.onNodeWithText("Bienvenido, usuario!").assertIsDisplayed()
-        // 3. Assert: No debe ver elementos de administración
         composeTestRule.onNodeWithText("Panel de Administración").assertDoesNotExist()
     }
 
@@ -68,24 +71,28 @@ class HomeScreenTest {
     fun homeScreen_clickEnItem_llamaCallbackNavegacion() {
         // 1. Arrange
         val itemIdClickedSlot = mutableListOf<String>()
-        val mockItems = listOf(
-            Item(id = "42", name = "Item Test", description = "Clickable item")
+        val mockGames = listOf(
+            // ✅ CORRECCIÓN 3: Usar la clase Juego y el campo 'titulo' para el texto
+            // Se asume que Juego tiene 'id' (Int) y 'titulo' (String) como mínimo
+            Juego(id = 42, titulo = "Juego Test", precio = 60.0, stock = 1)
         )
-        itemsFlow.value = mockItems // Emitir los datos
+        itemsFlow.value = mockGames // Emitir los datos
 
         composeTestRule.setContent {
             HomeScreen(
                 userType = "usuario",
+                // La navegación toma el ID como String, por lo que convertimos 42.toString()
                 onNavigateToDetail = { itemId -> itemIdClickedSlot.add(itemId) },
                 homeViewModel = mockViewModel
             )
         }
 
-        // 2. Act: Click en el nombre del item
-        composeTestRule.onNodeWithText("Item Test").performClick()
+        // 2. Act: Click en el nombre del item (ahora "Juego Test")
+        composeTestRule.onNodeWithText("Juego Test").performClick()
 
-        // 3. Assert: Verificar que el callback se llamó con el ID correcto
+        // 3. Assert: Verificar que el callback se llamó con el ID correcto (como String)
         assertEquals(1, itemIdClickedSlot.size)
+        // El ID debe ser "42" ya que la navegación usa Strings
         assertEquals("42", itemIdClickedSlot.first())
     }
 }

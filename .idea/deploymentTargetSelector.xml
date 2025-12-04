@@ -11,7 +11,7 @@
       <SelectionState runConfigName="NavegacionTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="navegacion_inicioConUsuarioLogeado_navegaAHomeUsuario()">
+      <SelectionState runConfigName="HomeScreenTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

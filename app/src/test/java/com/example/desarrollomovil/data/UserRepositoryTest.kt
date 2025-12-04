@@ -6,17 +6,20 @@ import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 
-// Asumiendo que tienes una interfaz para la base de datos como esta:
+// ---------------------------------------------------------------------------------------
+// Nota: Definición simulada de la DAO basada en tu repositorio
 interface UserDao {
-    suspend fun insertUser(user: User)
+    suspend fun registro(user: User): Long
+    suspend fun login(correo: String, password: String): User?
     suspend fun getUserByEmail(email: String): User?
-    suspend fun getUserByEmailAndPassword(email: String, passwordHash: String): User?
+    suspend fun adminExists(): Int
 }
+// ---------------------------------------------------------------------------------------
 
-// Nota: El UserRepository debe manejar el hasheo de contraseñas, lo simularemos aquí
 class UserRepositoryTest {
 
     private val userDao: UserDao = mockk()
@@ -24,66 +27,118 @@ class UserRepositoryTest {
 
     @Before
     fun setup() {
-        // Inicializar el repositorio con el mock de la DAO
         userRepository = UserRepository(userDao)
     }
 
-    @Test
-    fun registrarUsuario_llamaAInsertarEnDAO() = runTest {
-        // 1. Arrange: Simular que el usuario no existe para permitir el registro
-        coEvery { userDao.getUserByEmail("nuevo@mail.com") } returns null
-        coEvery { userDao.insertUser(any()) } returns Unit
+    // =========================================================================
+    // PRUEBAS PARA registro() - CORREGIDO
+    // =========================================================================
 
-        val userToRegister = User(nombre = "Nuevo", correo = "nuevo@mail.com", password = "password123", tipo = "usuario")
+    @Test
+    fun registro_llamaAregistroEnDAO_yRetornaId() = runTest {
+        // 1. Arrange
+        val userToRegister = User(
+            nombre = "Nuevo",
+            correo = "nuevo@mail.com",
+            password = "password123",
+            tipo = "usuario"
+        )
+        val expectedId = 5L // ID simulado que retorna la base de datos
+
+        // Simular que el método 'registro' de la DAO retorna el ID
+        coEvery { userDao.registro(userToRegister) } returns expectedId
 
         // 2. Act
-        userRepository.registrarUsuario(userToRegister)
+        // ✅ CORRECCIÓN: Llama a 'registro' y pasa el objeto User, coincidiendo con tu UserRepository
+        val actualId = userRepository.registro(userToRegister)
 
-        // 3. Assert: Verificar que el método de inserción en la DAO fue llamado
-        coVerify(exactly = 1) { userDao.insertUser(any()) }
+        // 3. Assert
+        coVerify(exactly = 1) { userDao.registro(userToRegister) }
+        assertEquals(expectedId, actualId)
+    }
+
+
+    // =========================================================================
+    // PRUEBAS PARA login()
+    // =========================================================================
+
+    @Test
+    fun login_credencialesCorrectas_retornaUsuario() = runTest {
+        val email = "admin@mail.com"
+        val password = "admin123"
+        val expectedUser = User(nombre = "Admin", correo = email, password = password, tipo = "admin")
+
+        coEvery { userDao.login(email, password) } returns expectedUser
+
+        val user = userRepository.login(email, password)
+
+        assertNotNull(user)
+        assertEquals("Admin", user?.nombre)
+        coVerify(exactly = 1) { userDao.login(email, password) }
     }
 
     @Test
+    fun login_credencialesIncorrectas_retornaNull() = runTest {
+        val email = "admin@mail.com"
+        val password = "wrongpassword"
+
+        coEvery { userDao.login(email, password) } returns null
+
+        val user = userRepository.login(email, password)
+
+        assertNull(user)
+        coVerify(exactly = 1) { userDao.login(email, password) }
+    }
+
+    // =========================================================================
+    // PRUEBAS PARA verificarUsuarioExiste()
+    // =========================================================================
+
+    @Test
     fun verificarUsuarioExiste_retornaTrueSiExiste() = runTest {
-        // 1. Arrange: Simular que la DAO devuelve un usuario
-        val existingUser = User(nombre = "Existente", correo = "existe@mail.com", password = "", tipo = "usuario")
-        coEvery { userDao.getUserByEmail("existe@mail.com") } returns existingUser
+        val email = "existe@mail.com"
+        val existingUser = User(nombre = "Existente", correo = email, password = "", tipo = "usuario")
+        coEvery { userDao.getUserByEmail(email) } returns existingUser
 
-        // 2. Act
-        val exists = userRepository.verificarUsuarioExiste("existe@mail.com")
+        val exists = userRepository.verificarUsuarioExiste(email)
 
-        // 3. Assert
         assertEquals(true, exists)
+        coVerify(exactly = 1) { userDao.getUserByEmail(email) }
     }
 
     @Test
     fun verificarUsuarioExiste_retornaFalseSiNoExiste() = runTest {
-        // 1. Arrange: Simular que la DAO devuelve null
-        coEvery { userDao.getUserByEmail("noexiste@mail.com") } returns null
+        val email = "noexiste@mail.com"
+        coEvery { userDao.getUserByEmail(email) } returns null
 
-        // 2. Act
-        val exists = userRepository.verificarUsuarioExiste("noexiste@mail.com")
+        val exists = userRepository.verificarUsuarioExiste(email)
 
-        // 3. Assert
         assertEquals(false, exists)
+        coVerify(exactly = 1) { userDao.getUserByEmail(email) }
+    }
+
+    // =========================================================================
+    // PRUEBAS PARA initializeAdmin()
+    // =========================================================================
+
+    @Test
+    fun initializeAdmin_noExisteAdmin_creaAdmin() = runTest {
+        coEvery { userDao.adminExists() } returns 0
+        coEvery { userDao.registro(any()) } returns 1L
+
+        userRepository.initializeAdmin()
+
+        coVerify(exactly = 1) { userDao.adminExists() }
+        coVerify(exactly = 1) { userDao.registro(match { it.correo == "admin@mail.com" }) }
     }
 
     @Test
-    fun login_credencialesCorrectas_retornaUsuario() = runTest {
-        // 1. Arrange: Simular el hash de la contraseña (el repositorio debe hacer esto)
-        val email = "admin@mail.com"
-        val password = "admin123"
-        // Asumiendo que el repositorio llama a un método con la contraseña ya hasheada
-        val expectedUser = User(nombre = "Admin", correo = email, password = "hashed_admin123", tipo = "admin")
+    fun initializeAdmin_existeAdmin_noHaceNada() = runTest {
+        coEvery { userDao.adminExists() } returns 1
 
-        // Simular que la DAO encuentra el usuario con las credenciales
-        coEvery { userRepository.login(email, password) } returns expectedUser
+        userRepository.initializeAdmin()
 
-        // 2. Act
-        val user = userRepository.login(email, password)
-
-        // 3. Assert
-        assertNotNull(user)
-        assertEquals("Admin", user?.nombre)
+        coVerify(exactly = 1) { userDao.adminExists() }
+        coVerify(exactly = 0) { userDao.registro(any()) }
     }
 }
